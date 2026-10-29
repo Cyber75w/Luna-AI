@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+set -eu
+
+PROJECT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
+PYTHON="$PROJECT_DIR/.venv/bin/python"
+FISH_CONF_DIR="$HOME/.config/fish/conf.d"
+
+if [ ! -x "$PYTHON" ]; then
+  printf '%s\n' "Luna's virtual environment is missing." "From the project folder, run:" "  python3 -m venv .venv" "  ./.venv/bin/python -m pip install -e ." >&2
+  exit 1
+fi
+
+"$PYTHON" -c 'import textual, rich' >/dev/null 2>&1 || {
+  printf '%s\n' "Luna's dependencies are missing. From the project folder, run:" "  ./.venv/bin/python -m pip install -e ." >&2
+  exit 1
+}
+
+mkdir -p "$FISH_CONF_DIR"
+cat > "$FISH_CONF_DIR/luna-ai.fish" <<EOF
+function luna --description 'Launch Luna AI from any directory'
+    "$PROJECT_DIR/run_luna" \$argv
+end
+EOF
+
+printf '%s\n' "Installed the luna command for fish." "Open a new fish terminal, or load it now with:" "  source $FISH_CONF_DIR/luna-ai.fish" "Then type luna from any directory."
